@@ -1,11 +1,3 @@
-// Get current domain from active tab
-chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-  const url = new URL(tabs[0].url);
-  const domain = url.hostname;
-  document.getElementById('domain').textContent = `Website: ${domain}`;
-  loadSelectors(domain);
-});
-
 const selectorInput = document.getElementById('selectorInput');
 const addBtn = document.getElementById('addBtn');
 const selectorsList = document.getElementById('selectorsList');
@@ -15,6 +7,9 @@ const exportBtn = document.getElementById('exportBtn');
 const importBtn = document.getElementById('importBtn');
 const importFile = document.getElementById('importFile');
 const backupStatus = document.getElementById('backupStatus');
+const fieldStatus = document.getElementById('fieldStatus');
+const rulesNote = document.getElementById('rulesNote');
+const domainDisplay = document.getElementById('domain');
 
 let currentDomain = '';
 
@@ -30,10 +25,22 @@ function normalizeSelectors(rawSelectors) {
   });
 }
 
-// Get current domain
 chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-  const url = new URL(tabs[0].url);
-  currentDomain = url.hostname;
+  try {
+    const url = new URL(tabs[0]?.url);
+    if (!/^https?:$/.test(url.protocol)) throw new Error('Unsupported page');
+    currentDomain = url.hostname;
+    domainDisplay.textContent = currentDomain;
+    domainDisplay.title = currentDomain;
+    loadSelectors(currentDomain);
+  } catch {
+    domainDisplay.textContent = 'Unavailable on this page';
+    selectorInput.disabled = true;
+    addBtn.disabled = true;
+    clearAllBtn.disabled = true;
+    rulesNote.textContent = 'No website';
+    selectorsList.innerHTML = '<div class="empty-state">Open a website to manage its rules.</div>';
+  }
 });
 
 // Load selectors for current domain
@@ -48,10 +55,12 @@ function loadSelectors(domain) {
 function renderSelectors(selectors, domain) {
   selectorsList.innerHTML = '';
   countDisplay.textContent = selectors.filter((item) => item.enabled).length;
+  rulesNote.textContent = `${selectors.length} total`;
+  clearAllBtn.disabled = selectors.length === 0;
 
   if (selectors.length === 0) {
     selectorsList.innerHTML =
-      '<div class="empty-state">No selectors yet. Add one to get started!</div>';
+      '<div class="empty-state"><strong>No rules for this website</strong>Add a selector above to hide matching elements.</div>';
     return;
   }
 
@@ -73,6 +82,7 @@ function renderSelectors(selectors, domain) {
       const toggle = document.createElement('input');
       toggle.type = 'checkbox';
       toggle.className = 'selector-toggle';
+      toggle.setAttribute('aria-label', `${entry.enabled ? 'Disable' : 'Enable'} ${entry.selector}`);
       toggle.dataset.index = index;
       toggle.checked = entry.enabled;
       const slider = document.createElement('span');
@@ -82,7 +92,8 @@ function renderSelectors(selectors, domain) {
       const deleteBtn = document.createElement('button');
       deleteBtn.className = 'btn-delete';
       deleteBtn.dataset.index = index;
-      deleteBtn.textContent = 'Delete';
+      deleteBtn.textContent = 'Remove';
+      deleteBtn.setAttribute('aria-label', `Remove ${entry.selector}`);
       actions.append(toggleLabel, deleteBtn);
       item.append(selectorText, actions);
       selectorsList.appendChild(item);
@@ -109,7 +120,7 @@ addBtn.addEventListener('click', function () {
   addSelector();
 });
 
-selectorInput.addEventListener('keypress', function (e) {
+selectorInput.addEventListener('keydown', function (e) {
   if (e.key === 'Enter') {
     addSelector();
   }
@@ -117,9 +128,10 @@ selectorInput.addEventListener('keypress', function (e) {
 
 function addSelector() {
   const selector = selectorInput.value.trim();
+  fieldStatus.textContent = '';
 
   if (!selector) {
-    alert('Please enter a CSS selector');
+    fieldStatus.textContent = 'Enter a CSS selector first.';
     selectorInput.focus();
     return;
   }
@@ -128,7 +140,8 @@ function addSelector() {
   try {
     document.querySelectorAll(selector);
   } catch (e) {
-    alert('Invalid CSS selector: ' + e.message);
+    fieldStatus.textContent = 'That CSS selector is not valid.';
+    selectorInput.focus();
     return;
   }
 
@@ -136,7 +149,8 @@ function addSelector() {
     let selectors = normalizeSelectors(result[currentDomain] || []);
 
     if (selectors.some((item) => item.selector === selector)) {
-      alert('This selector is already added');
+      fieldStatus.textContent = 'This selector is already in the list.';
+      selectorInput.focus();
       return;
     }
 
@@ -263,12 +277,14 @@ function validateBackup(data) {
   }
 
   const sites = Object.create(null);
+  let skipped = 0;
   for (const [domain, entries] of Object.entries(backupSites)) {
     if (!isWebsiteKey(domain) || !Array.isArray(entries)) {
       throw new Error(`Invalid rules for website: ${domain}`);
     }
     const seen = new Set();
-    sites[domain] = entries.map((entry) => {
+    const validRules = [];
+    for (const entry of entries) {
       const selector = typeof entry === 'string' ? entry : entry?.selector;
       if (typeof selector !== 'string' || !selector.trim()) {
         throw new Error(`Invalid selector for website: ${domain}`);
@@ -276,16 +292,16 @@ function validateBackup(data) {
       try {
         document.querySelectorAll(selector);
       } catch {
-        throw new Error(`Invalid CSS selector for website: ${domain}`);
+        skipped++;
+        continue;
       }
-      if (seen.has(selector)) {
-        throw new Error(`Duplicate selector for website: ${domain}`);
-      }
+      if (seen.has(selector)) continue;
       seen.add(selector);
-      return { selector, enabled: entry?.enabled !== false };
-    });
+      validRules.push({ selector, enabled: entry?.enabled !== false });
+    }
+    if (validRules.length) sites[domain] = validRules;
   }
-  return sites;
+  return { sites, skipped };
 }
 
 exportBtn.addEventListener('click', async () => {
@@ -320,7 +336,9 @@ importFile.addEventListener('change', async () => {
   const file = importFile.files[0];
   if (!file) return;
   try {
-    const imported = validateBackup(JSON.parse(await file.text()));
+    const { sites: imported, skipped } = validateBackup(
+      JSON.parse(await file.text()),
+    );
     const stored = await chrome.storage.local.get(null);
     const merged = Object.create(null);
     let added = 0;
@@ -343,7 +361,7 @@ importFile.addEventListener('change', async () => {
       renderSelectors(merged[currentDomain], currentDomain);
       applySelectorsToTab(merged[currentDomain]);
     }
-    backupStatus.textContent = `Imported ${added} new rule${added === 1 ? '' : 's'} across ${Object.keys(imported).length} website${Object.keys(imported).length === 1 ? '' : 's'}.`;
+    backupStatus.textContent = `Imported ${added} new rule${added === 1 ? '' : 's'} across ${Object.keys(imported).length} website${Object.keys(imported).length === 1 ? '' : 's'}.${skipped ? ` Skipped ${skipped} invalid CSS rule${skipped === 1 ? '' : 's'}.` : ''}`;
   } catch (error) {
     backupStatus.textContent = `Import failed: ${error.message}`;
   } finally {
