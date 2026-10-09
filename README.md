@@ -22,6 +22,7 @@ A simple yet powerful Chrome extension that allows you to hide unwanted elements
 - View all active selectors at a glance
 - Delete individual rules anytime
 - Clear all hidden elements with one click
+- Export all websites' rules to a JSON backup and import them later
 
 💾 **Local Storage**
 
@@ -44,6 +45,10 @@ A simple yet powerful Chrome extension that allows you to hide unwanted elements
    - Click the extension icon in your Chrome toolbar
    - The popup will show the current website domain
    - Start adding CSS selectors to hide elements
+
+### Backing Up Rules
+
+Click **Export** below **Clear All Hidden Elements** to download a JSON backup of rules for every website, including disabled rules. Click **Import** and choose that file to restore rules. Import adds missing selectors to each website and keeps existing selectors and their enabled settings. The same backup works with Site Cleaner Suite for Safari; older Site Cleaner Suite selector backups can also be imported.
 
 ### Adding Selectors
 
