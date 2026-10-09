@@ -72,6 +72,25 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   if (request.action === 'applyHiding') {
     applyHiding(normalizeSelectors(request.selectors || []));
     sendResponse({ status: 'applied' });
+  } else if (request.action === 'startPicker') {
+    globalThis.startElementPicker({
+      save: async (selector) => {
+        const result = await chrome.storage.local.get([domain]);
+        const rules = normalizeSelectors(result[domain] || []);
+        if (rules.some((rule) => rule.selector === selector)) return false;
+        rules.push({ selector, enabled: true });
+        await chrome.storage.local.set({ [domain]: rules });
+        return true;
+      },
+      undo: async (selector) => {
+        const result = await chrome.storage.local.get([domain]);
+        const rules = normalizeSelectors(result[domain] || []);
+        await chrome.storage.local.set({
+          [domain]: rules.filter((rule) => rule.selector !== selector),
+        });
+      },
+    });
+    sendResponse({ status: 'started' });
   }
 });
 

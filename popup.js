@@ -1,5 +1,6 @@
 const selectorInput = document.getElementById('selectorInput');
 const addBtn = document.getElementById('addBtn');
+const pickBtn = document.getElementById('pickBtn');
 const selectorsList = document.getElementById('selectorsList');
 const countDisplay = document.getElementById('count');
 const clearAllBtn = document.getElementById('clearAllBtn');
@@ -37,6 +38,7 @@ chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
     domainDisplay.textContent = 'Unavailable on this page';
     selectorInput.disabled = true;
     addBtn.disabled = true;
+    pickBtn.disabled = true;
     clearAllBtn.disabled = true;
     rulesNote.textContent = 'No website';
     selectorsList.innerHTML = '<div class="empty-state">Open a website to manage its rules.</div>';
@@ -118,6 +120,27 @@ function renderSelectors(selectors, domain) {
 // Add new selector
 addBtn.addEventListener('click', function () {
   addSelector();
+});
+
+pickBtn.addEventListener('click', async () => {
+  fieldStatus.textContent = '';
+  try {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (!tab?.id || new URL(tab.url).hostname !== currentDomain)
+      throw new Error('Open a website to pick an element.');
+    try {
+      await chrome.tabs.sendMessage(tab.id, { action: 'startPicker' });
+    } catch {
+      await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        files: ['picker.js', 'content.js'],
+      });
+      await chrome.tabs.sendMessage(tab.id, { action: 'startPicker' });
+    }
+    window.close();
+  } catch (error) {
+    fieldStatus.textContent = error.message || 'Could not start the picker on this page.';
+  }
 });
 
 selectorInput.addEventListener('keydown', function (e) {

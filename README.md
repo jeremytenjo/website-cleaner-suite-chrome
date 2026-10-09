@@ -52,6 +52,8 @@ Click **Export** below **Clear All Hidden Elements** to download a JSON backup o
 
 ### Adding Selectors
 
+To pick one visually, open the extension on the website and click **Pick an element on the page**. Tap or click an element to outline it, choose its parent if needed, then select **Hide this** or **Hide similar**. The picker shows how many elements a similar rule would match and offers **Undo** after saving.
+
 #### Method 1: Simple Class/ID
 
 ```

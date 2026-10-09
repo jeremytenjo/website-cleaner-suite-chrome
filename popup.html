@@ -32,6 +32,8 @@
     .btn-primary:hover { background: #304a42; }
     .hint { margin: 9px 0 0; color: #5c6860; font-size: 11px; line-height: 1.45; }
     .hint code { color: #304a42; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .btn-pick { width: 100%; min-height: 40px; margin-top: 10px; border: 1px solid #587a68; border-radius: 4px; background: #e9f0e9; color: #1d302c; font-weight: 650; }
+    .btn-pick:hover { background: #dceadc; }
     .field-status { margin: 8px 0 0; color: #a23d29; font-size: 12px; line-height: 1.4; }
     .field-status:empty { display: none; }
     .rules { margin-top: 26px; }
@@ -78,6 +80,7 @@
         <input type="text" id="selectorInput" aria-label="CSS selector" aria-describedby="selectorHint fieldStatus" placeholder=".ad, #banner, div.popup" autofocus />
         <button class="btn-primary" id="addBtn" type="button">Add rule</button>
       </div>
+      <button class="btn-pick" id="pickBtn" type="button">Pick an element on the page</button>
       <p class="hint" id="selectorHint">Enter a CSS selector, such as <code>.ad</code> or <code>#banner</code>.</p>
       <p class="field-status" id="fieldStatus" role="status" aria-live="polite"></p>
     </section>
