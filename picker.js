@@ -3,7 +3,7 @@ globalThis.startElementPicker = function startElementPicker({ save, undo }) {
   globalThis.__hideElementsPickerClose?.();
 
   const host = document.createElement('div');
-  host.id = 'hide-elements-picker';
+  host.id = 'website-cleaner-suite-picker';
   host.style.cssText = 'position:fixed;inset:0;z-index:2147483647;pointer-events:none';
   const shadow = host.attachShadow({ mode: 'open' });
   shadow.innerHTML = `

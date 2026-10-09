@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Hide Elements",
+  "name": "Website Cleaner Suite Chrome",
   "version": "1.0.0",
   "description": "Hide elements from any website with ease. Add CSS selectors to hide elements persistently.",
   "permissions": ["storage", "activeTab", "scripting"],

@@ -1,4 +1,4 @@
-# Hide Elements Chrome Extension
+# Website Cleaner Suite Chrome
 
 A simple yet powerful Chrome extension that allows you to hide unwanted elements from any website persistently.
 
@@ -39,7 +39,7 @@ A simple yet powerful Chrome extension that allows you to hide unwanted elements
    - Open Chrome and go to `chrome://extensions/`
    - Enable "Developer mode" (top right corner)
    - Click "Load unpacked"
-   - Select the `hide-elements-chrome-extension` folder
+   - Select the `website-cleaner-suite-chrome` folder
 
 2. **Start Using**
    - Click the extension icon in your Chrome toolbar
@@ -48,7 +48,7 @@ A simple yet powerful Chrome extension that allows you to hide unwanted elements
 
 ### Backing Up Rules
 
-Click **Export** below **Clear All Hidden Elements** to download a JSON backup of rules for every website, including disabled rules. Click **Import** and choose that file to restore rules. Import adds missing selectors to each website and keeps existing selectors and their enabled settings. The same backup works with Site Cleaner Suite for Safari; older Site Cleaner Suite selector backups can also be imported.
+Click **Export** below **Clear All Hidden Elements** to download a JSON backup of rules for every website, including disabled rules. Click **Import** and choose that file to restore rules. Import adds missing selectors to each website and keeps existing selectors and their enabled settings. The same backup works with Website Cleaner Suite Safari; older Site Cleaner Suite selector backups can also be imported.
 
 ### Adding Selectors
 
@@ -122,7 +122,7 @@ ytd-rich-item-renderer
 ## Files Structure
 
 ```
-hide-elements-chrome-extension/
+website-cleaner-suite-chrome/
 ├── manifest.json       # Extension configuration
 ├── popup.html         # Popup UI
 ├── popup.js           # Popup logic and interaction

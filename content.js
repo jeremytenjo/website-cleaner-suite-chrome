@@ -41,7 +41,7 @@ function applyHiding(selectors) {
 
   // Create style element with all selectors
   styleElement = document.createElement('style');
-  styleElement.id = 'hide-elements-style';
+  styleElement.id = 'website-cleaner-suite-style';
   styleElement.type = 'text/css';
 
   const css = activeSelectors

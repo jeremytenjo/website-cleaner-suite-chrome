@@ -234,7 +234,7 @@ function applySelectorsToTab(selectors) {
             .executeScript({
               target: { tabId: tabs[0].id },
               func: (selectorsToApply) => {
-                const existing = document.getElementById('hide-elements-style');
+                const existing = document.getElementById('website-cleaner-suite-style');
                 if (existing) existing.remove();
 
                 const active = selectorsToApply.filter(
@@ -243,7 +243,7 @@ function applySelectorsToTab(selectors) {
                 if (active.length === 0) return;
 
                 const style = document.createElement('style');
-                style.id = 'hide-elements-style';
+                style.id = 'website-cleaner-suite-style';
                 style.textContent = active
                   .map((s) => `${s.selector} { display: none !important; }`)
                   .join('\n');
@@ -290,13 +290,13 @@ function validateBackup(data) {
     data.version !== 1 ||
     (data.type !== undefined && data.type !== 'selectorsBySite')
   ) {
-    throw new Error('This is not a Hide Elements backup file.');
+    throw new Error('This is not a Website Cleaner Suite Chrome backup file.');
   }
 
   // Older Site Cleaner Suite backups used selectorsBySite instead of sites.
   const backupSites = data.sites ?? data.selectorsBySite;
   if (!backupSites || typeof backupSites !== 'object' || Array.isArray(backupSites)) {
-    throw new Error('This is not a Hide Elements backup file.');
+    throw new Error('This is not a Website Cleaner Suite Chrome backup file.');
   }
 
   const sites = Object.create(null);
@@ -342,7 +342,7 @@ exportBtn.addEventListener('click', async () => {
     const url = URL.createObjectURL(backup);
     const link = document.createElement('a');
     link.href = url;
-    link.download = 'hide-elements-backup.json';
+    link.download = 'website-cleaner-suite-backup.json';
     document.body.appendChild(link);
     link.click();
     link.remove();
